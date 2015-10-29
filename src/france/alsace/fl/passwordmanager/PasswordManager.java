@@ -1,6 +1,12 @@
 package france.alsace.fl.passwordmanager;
 
+import java.util.Optional;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -15,7 +21,7 @@ public class PasswordManager extends Application {
         
         stage.initStyle(StageStyle.UTILITY);
         stage.setResizable(false);
-        stage.setTitle("Test");
+        stage.setTitle("Password Manager");
         
         ScreenManager sm = new ScreenManager(stage);
         sm.addScreen("home", "FXMLHome.fxml");
@@ -23,24 +29,60 @@ public class PasswordManager extends Application {
         
         ScreenManager.setScreen("home");
         
-//        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-//            @Override
-//            public void handle(WindowEvent event) {
-//                Alert alert = new Alert(AlertType.CONFIRMATION);
-//                alert.setTitle("Confirmation Dialog");
-//                alert.setHeaderText("Look, a Confirmation Dialog");
-//                alert.setContentText("Are you ok with this?");
-//
-//                Optional<ButtonType> result = alert.showAndWait();
-//                if (result.get() == ButtonType.OK){
-//                    System.out.println("ok");
-//                    Platform.exit();
-//                } else {
-//                    System.out.println("nok");
-//                    event.consume();
-//                }
-//            }
-//        });
+        stage.setOnCloseRequest((event) -> {
+            if(ScreenManager.getCurrentScreenName().equals("home")) {
+                Alert alert = new Alert(AlertType.CONFIRMATION);
+                alert.initStyle(StageStyle.UTILITY);
+                alert.setTitle("Quitter");
+                alert.setHeaderText("Quitter l'application");
+                alert.setContentText("Voulez-vous quitter l'application ?");
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK){
+                    Platform.exit();
+                } else {
+                    event.consume();
+                }
+            } else if(ScreenManager.getCurrentScreenName().equals("passwordManager")) {
+                if(FXMLPasswordManagerController.isModif()) {
+                    Alert alert = new Alert(AlertType.CONFIRMATION);
+                    alert.initStyle(StageStyle.UTILITY);
+                    alert.setTitle("Enregistrer");
+                    alert.setHeaderText("Enregistrer avant de quitter");
+                    alert.setContentText("Voulez-vous enregistrer avant de quitter l'application ?");
+                    
+                    ButtonType buttonTypeYes = new ButtonType("Oui");
+                    ButtonType buttonTypeNo = new ButtonType("Non");
+                    ButtonType buttonTypeCancel = new ButtonType("Annuler", ButtonData.CANCEL_CLOSE);
+                    
+                    alert.getButtonTypes().setAll(buttonTypeYes, buttonTypeNo, buttonTypeCancel);
+                    
+                    Optional<ButtonType> result = alert.showAndWait();
+                    
+                    if (result.get() == buttonTypeYes){
+                        FXMLPasswordManagerController.saveListInFile();
+                        Platform.exit();
+                    } else if (result.get() == buttonTypeNo) {
+                        Platform.exit();
+                    } else {
+                        event.consume();
+                    }
+                } else {
+                    Alert alert = new Alert(AlertType.CONFIRMATION);
+                    alert.initStyle(StageStyle.UTILITY);
+                    alert.setTitle("Quitter");
+                    alert.setHeaderText("Quitter l'application");
+                    alert.setContentText("Voulez-vous quitter l'application ?");
+
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (result.get() == ButtonType.OK){
+                        Platform.exit();
+                    } else {
+                        event.consume();
+                    }
+                }
+            }
+        });
         
         stage.show();
     }
@@ -54,7 +96,6 @@ public class PasswordManager extends Application {
     
     @Override
     public void stop() {
-        System.out.println("Stage is closing");
     }
     
 }

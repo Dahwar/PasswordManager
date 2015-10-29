@@ -11,14 +11,18 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -26,6 +30,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.StageStyle;
 
 /**
  * FXML Controller class
@@ -80,6 +85,18 @@ public class FXMLHomeController implements Initializable {
 
     @FXML
     private void quitMenuItem(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.setTitle("Quitter");
+        alert.setHeaderText("Quitter l'application");
+        alert.setContentText("Voulez-vous quitter l'application ?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            Platform.exit();
+        } else {
+            event.consume();
+        }
     }
 
     @FXML
@@ -93,6 +110,7 @@ public class FXMLHomeController implements Initializable {
                 FXMLPasswordManagerController.setPassword(this.filePasswordPasswordField.getText());
                 FXMLPasswordManagerController.setFile(newFile);
                 ScreenManager.setScreen("passwordManager");
+                eraseField();
             } catch (IOException ex) {
                 this.newFileErrorLabel.setText(ERROR);
                 Logger.getLogger(FXMLHomeController.class.getName()).log(Level.SEVERE, null, ex);
@@ -171,9 +189,10 @@ public class FXMLHomeController implements Initializable {
             
             FXMLPasswordManagerController.setFile(file);
             FXMLPasswordManagerController.setPassword(this.passwordOpenFilePasswordField.getText());
-            FXCollections.observableArrayList(al);
+            FXMLPasswordManagerController.setObsListMyInfos(FXCollections.observableArrayList(al));
             
             ScreenManager.setScreen("passwordManager");
+            eraseField();
         } catch (IOException ex) {
             Logger.getLogger(FXMLHomeController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -190,5 +209,22 @@ public class FXMLHomeController implements Initializable {
     @FXML
     private void checkOpenFileName(KeyEvent event) {
         this.checkForActivateOpenButton();
+    }
+    
+    private void eraseField() {
+        this.newFileDirectoryTextField.clear();
+        this.newFileNameTextField.clear();
+        this.filePasswordPasswordField.clear();
+        this.filePasswordConfirmPasswordField.clear();
+        
+        this.openFileTextField.clear();
+        this.passwordOpenFilePasswordField.clear();
+        
+        this.newFileErrorLabel.setText("");
+        this.openFileErrorLabel.setText("");
+        
+        this.createButton.setDisable(true);
+        this.openFileButton.setDisable(true);
+        
     }
 }

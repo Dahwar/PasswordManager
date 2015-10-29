@@ -23,6 +23,7 @@ public class ScreenManager {
     
     private static HashMap<String, Scene> screens = new HashMap<>();
     private static Stage stage;
+    private static String currentScreenName;
     
     public ScreenManager(Stage stage) {
         if(this.stage == null) {
@@ -58,6 +59,11 @@ public class ScreenManager {
     public static void setScreen(String name) {
         if(screens.containsKey(name) && screens.get(name) != null) {
             stage.setScene(screens.get(name));
+            currentScreenName = name;
         }
+    }
+    
+    public static String getCurrentScreenName() {
+        return currentScreenName;
     }
 }
