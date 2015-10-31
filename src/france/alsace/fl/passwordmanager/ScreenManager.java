@@ -16,7 +16,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- *
+ * To manage all the screens of the application
  * @author Florent
  */
 public class ScreenManager {
@@ -25,20 +25,37 @@ public class ScreenManager {
     private static Stage stage;
     private static String currentScreenName;
     
+    /**
+     * Constructor
+     * @param stage the stage of the application
+     */
     public ScreenManager(Stage stage) {
-        if(this.stage == null) {
-            this.stage = stage;
+        if(ScreenManager.stage == null) {
+            ScreenManager.stage = stage;
         }
     }
     
+    /**
+     * Dafault constructor
+     */
     public ScreenManager() {
     }
     
+    /**
+     * Add a screen to the ScreenManager
+     * @param name the name of the screen
+     * @param resource the path of the screen
+     */
     public void addScreen(String name, String resource) {
         Scene scene = createScene(loadScreen(getClass().getResource(resource)));
         screens.put(name, scene);
     }
     
+    /**
+     * Load the screen
+     * @param url the url of the screen
+     * @return the parent of the scene
+     */
     private Parent loadScreen(URL url) {
         try {
             return FXMLLoader.load(url);
@@ -48,6 +65,11 @@ public class ScreenManager {
         return null;
     }
     
+    /**
+     * Create the scene
+     * @param root
+     * @return the scene
+     */
     private Scene createScene(Parent root) {
         if(root != null) {
             return new Scene(root);
@@ -56,6 +78,10 @@ public class ScreenManager {
         }
     }
     
+    /**
+     * Set the screen
+     * @param name the name of the screen
+     */
     public static void setScreen(String name) {
         if(screens.containsKey(name) && screens.get(name) != null) {
             stage.setScene(screens.get(name));
@@ -63,6 +89,10 @@ public class ScreenManager {
         }
     }
     
+    /**
+     * Get the current screen name
+     * @return the current screen name
+     */
     public static String getCurrentScreenName() {
         return currentScreenName;
     }

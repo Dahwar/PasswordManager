@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- *
+ * The Password Manager
  * @author Florent
  */
 public class PasswordManager extends Application {

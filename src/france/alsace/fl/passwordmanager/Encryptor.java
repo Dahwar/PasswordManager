@@ -19,7 +19,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Encryptor class to cipher file
+ * Encryptor class to cipher string
  * @author Florent
  */
 public class Encryptor {
@@ -38,10 +38,10 @@ public class Encryptor {
     }
     
     /**
-     * To cipher the file
+     * To cipher the string
      * @param stringClear the clear string
      * @param password the password
-     * @return the ciphered file
+     * @return the ciphered string
      */
     public CipheredString cipher(String stringClear, String password) {
         try {

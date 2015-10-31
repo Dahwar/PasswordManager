@@ -39,7 +39,8 @@ import javafx.scene.paint.Color;
 import javafx.stage.StageStyle;
 
 /**
- *
+ * FXML Password Manager Controller class
+ * 
  * @author Florent
  */
 public class FXMLPasswordManagerController implements Initializable {
@@ -81,8 +82,14 @@ public class FXMLPasswordManagerController implements Initializable {
     
     private Dialog<String> dialog = new Dialog<>();
     
+    //if the item list is modif
     private static boolean modif = false;
     
+    /**
+     * Initialize the controller class
+     * @param url
+     * @param rb 
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         itemListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -103,6 +110,7 @@ public class FXMLPasswordManagerController implements Initializable {
             }
         });
         
+        //configure the dialog
         dialog.setTitle("Changer le mot de passe de l'entité : " + "");
         dialog.setHeaderText("Veuillez entrer votre nouveau mot de passe : ");
         dialog.initStyle(StageStyle.UTILITY);
@@ -151,10 +159,12 @@ public class FXMLPasswordManagerController implements Initializable {
             return null;
         });
         
+        //configure the refresh of listView
         lifetimePasswordTextField.setOnKeyReleased((event) -> {
             itemListView.refresh();
         });
         
+        //set the cell factory of listView
         itemListView.setCellFactory((list) -> { 
             return new ListCell<MyCipheredInfo>() {
                 @Override
@@ -182,20 +192,29 @@ public class FXMLPasswordManagerController implements Initializable {
         });
     }
 
+    /**
+     * Check if the two string are the same and not empty
+     * @param s1 first string
+     * @param s2 second string
+     * @return true if the string are the same and not empty, false otherwise
+     */
     private boolean isSameNewPassword(String s1, String s2) {
-        if(s1.equals(s2) && !s1.isEmpty() && !s2.isEmpty()) {
-            return true;
-        }
-        return false;
+        return (s1.equals(s2) && !s1.isEmpty() && !s2.isEmpty());
     }
-    
 
+    /**
+     * Save the file when click on menu fichier/enregistrers
+     * @param event 
+     */
     @FXML
     private void saveFile(ActionEvent event) {
-        this.saveListInFile();
+        saveListInFile();
     }
 
-
+    /**
+     * Quit the application when click on menu fichier/quitter (with a confirmation dialog)
+     * @param event 
+     */
     @FXML
     private void quit(ActionEvent event) {
         if(isModif()) {
@@ -229,6 +248,10 @@ public class FXMLPasswordManagerController implements Initializable {
         }
     }
 
+    /**
+     * Update the password
+     * @param event 
+     */
     @FXML
     private void updatePassword(ActionEvent event) {
         if(itemListView.getSelectionModel().getSelectedItem()!=null) {
@@ -254,6 +277,10 @@ public class FXMLPasswordManagerController implements Initializable {
         
     }
 
+    /**
+     * Delete a item of the list (with a confirmation dialog)
+     * @param event 
+     */
     @FXML
     private void deleteItem(ActionEvent event) {        
         if(itemListView.getSelectionModel().getSelectedItem()!=null) {
@@ -288,6 +315,10 @@ public class FXMLPasswordManagerController implements Initializable {
         }
     }
 
+    /**
+     * Add a entity
+     * @param event 
+     */
     @FXML
     private void addEntity(ActionEvent event) {
         if(!entityTextField.getText().equals("") 
@@ -317,7 +348,9 @@ public class FXMLPasswordManagerController implements Initializable {
         }
     }
 
-    
+    /**
+     * Save the list in a file
+     */
     public static void saveListInFile() {
         List<MyCipheredInfo> list = new ArrayList<>();
         for(MyCipheredInfo mci : FXMLPasswordManagerController.obsListMyInfos) {
@@ -333,18 +366,34 @@ public class FXMLPasswordManagerController implements Initializable {
         modif = false;
     }
     
+    /**
+     * To pass the password from the Home view to the Password Manager view
+     * @param password the password
+     */
     public static void setPassword(String password) {
         FXMLPasswordManagerController.password = password;
     }
     
+    /**
+     * To pass the file from the Home view to the Password Manager view
+     * @param file the file who contains the passwords and other infos
+     */
     public static void setFile(File file) {
         FXMLPasswordManagerController.file = file;
     }
     
+    /**
+     * To pass the list from the Home view to the Password Manager view
+     * @param obs the list of informations
+     */
     public static void setObsListMyInfos (ObservableList<MyCipheredInfo> obs) {
         obsListMyInfos.addAll(obs);
     }
     
+    /**
+     * Get a object output stream on the opened file
+     * @return the object output stream on the opened file
+     */
     private static ObjectOutputStream getObjectOutputStream() {
         if(oos == null) {
             try {
@@ -356,6 +405,9 @@ public class FXMLPasswordManagerController implements Initializable {
         return oos;
     }
     
+    /**
+     * Erase all the fields
+     */
     private void eraseField() {
         file = null;
         password = null;
@@ -376,6 +428,10 @@ public class FXMLPasswordManagerController implements Initializable {
         modif = false;
     }
     
+    /**
+     * Check if the list is modif
+     * @return true if list modified, false otherwise
+     */
     public static boolean isModif() {
         return modif;
     }

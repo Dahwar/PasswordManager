@@ -17,7 +17,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Decryptor class to decipher file
+ * Decryptor class to decipher string
  * @author Florent
  */
 public class Decryptor {
@@ -36,10 +36,10 @@ public class Decryptor {
     }
     
     /**
-     * To decipher the file
+     * To decipher the string
      * @param cs the cipher string
      * @param password the password
-     * @return the deciphered file
+     * @return the deciphered string
      */
     public String decipher(CipheredString cs, String password) {
         try {

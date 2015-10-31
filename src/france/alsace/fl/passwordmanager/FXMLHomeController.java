@@ -33,8 +33,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.StageStyle;
 
 /**
- * FXML Controller class
- *
+ * FXML Home Controller class
  * @author Florent
  */
 public class FXMLHomeController implements Initializable {
@@ -70,10 +69,10 @@ public class FXMLHomeController implements Initializable {
     @FXML
     private Label openFileErrorLabel;
 
-    private ObjectInputStream ois = null;
-    
     /**
-     * Initializes the controller class.
+     * Initialize the controller class.
+     * @param url
+     * @param rb 
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -83,6 +82,10 @@ public class FXMLHomeController implements Initializable {
         this.openFileButton.setDisable(true);
     }    
 
+    /**
+     * Call by the menu fichier/quitter
+     * @param event 
+     */
     @FXML
     private void quitMenuItem(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -99,6 +102,10 @@ public class FXMLHomeController implements Initializable {
         }
     }
 
+    /**
+     * Call by the button create new file
+     * @param event 
+     */
     @FXML
     private void createNewFileButton(ActionEvent event) {
         File newFile = new File(this.newFileDirectoryTextField.getText() + "\\" + this.newFileNameTextField.getText() + "." + FILE_EXTENSION);
@@ -118,7 +125,10 @@ public class FXMLHomeController implements Initializable {
         }   
     }
 
-
+    /**
+     * Open the directory chooser when click on the choose folder field
+     * @param event 
+     */
     @FXML
     private void openDirectoryChooser(MouseEvent event) {
         DirectoryChooser dc = new DirectoryChooser();
@@ -130,6 +140,10 @@ public class FXMLHomeController implements Initializable {
         checkForActivateCreateButton();
     }
 
+    /**
+     * Check if passwords are identical on key release
+     * @param event 
+     */
     @FXML
     private void checkPassword(KeyEvent event) {
         if(!this.filePasswordPasswordField.getText().equals(this.filePasswordConfirmPasswordField.getText())) {
@@ -140,6 +154,9 @@ public class FXMLHomeController implements Initializable {
         checkForActivateCreateButton();
     }
     
+    /**
+     * Able or disable create new file button
+     */
     private void checkForActivateCreateButton() {
         if(this.filePasswordPasswordField.getText().equals(this.filePasswordConfirmPasswordField.getText())
                 && !this.filePasswordPasswordField.getText().equals("")
@@ -151,6 +168,9 @@ public class FXMLHomeController implements Initializable {
         }
     }
     
+    /**
+     * Able or disable open file button
+     */
     private void checkForActivateOpenButton() {
         if(!this.openFileTextField.getText().equals("") 
                 && !this.passwordOpenFilePasswordField.getText().equals("")) {
@@ -160,11 +180,19 @@ public class FXMLHomeController implements Initializable {
         }
     }
 
+    /**
+     * Check if all field aren't empty when feed file name
+     * @param event 
+     */
     @FXML
     private void checkFileName(KeyEvent event) {
         this.checkForActivateCreateButton();
     }
 
+    /**
+     * Open the file chooser when click on the choose file field
+     * @param event 
+     */
     @FXML
     private void openFileChooser(MouseEvent event) {
         FileChooser fc = new FileChooser();
@@ -179,6 +207,10 @@ public class FXMLHomeController implements Initializable {
         this.checkForActivateOpenButton();
     }
 
+    /**
+     * Open file when click on open file button
+     * @param event 
+     */
     @FXML
     private void openCipheredFile(ActionEvent event) {
         ObjectInputStream ois = null;
@@ -193,9 +225,7 @@ public class FXMLHomeController implements Initializable {
             
             ScreenManager.setScreen("passwordManager");
             eraseField();
-        } catch (IOException ex) {
-            Logger.getLogger(FXMLHomeController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(FXMLHomeController.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
@@ -206,11 +236,18 @@ public class FXMLHomeController implements Initializable {
         }
     }
 
+    /**
+     * Check if all field aren't empty when feed file name
+     * @param event 
+     */
     @FXML
     private void checkOpenFileName(KeyEvent event) {
         this.checkForActivateOpenButton();
     }
     
+    /**
+     * Erase all fields
+     */
     private void eraseField() {
         this.newFileDirectoryTextField.clear();
         this.newFileNameTextField.clear();
@@ -225,6 +262,5 @@ public class FXMLHomeController implements Initializable {
         
         this.createButton.setDisable(true);
         this.openFileButton.setDisable(true);
-        
     }
 }
