@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -25,6 +27,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -34,9 +37,12 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 /**
  * FXML Password Manager Controller class
@@ -66,6 +72,20 @@ public class FXMLPasswordManagerController implements Initializable {
     private Label passwordLabel;
     @FXML
     private Button displayPasswordButton;
+    @FXML
+    private TextField generatePasswordTextField;
+    @FXML
+    private TextField sizeGenerationTextField;
+    @FXML
+    private CheckBox minCheckBox;
+    @FXML
+    private CheckBox majCheckBox;
+    @FXML
+    private CheckBox numericCheckBox;
+    @FXML
+    private CheckBox specialCheckBox;
+    @FXML
+    private Label generatePasswordLabel;
     
     private static ObservableList<MyCipheredInfo> obsListMyInfos = FXCollections.observableArrayList();
     private static String password;
@@ -74,6 +94,13 @@ public class FXMLPasswordManagerController implements Initializable {
     private static final String ERROR_MISSING_ENTITY = "Veuillez saisir une entité !";
     private static final String ERROR_MISSING_ID = "Veuillez saisir un identifiant !";
     private static final String ERROR_MISSING_PASSWORD = "Veuillez saisir un mot de passe !";
+    
+    private static final String ALPHA_MIN = "abcdefghijklmnopqrstuvwxyz";
+    private static final String ALPHA_MAJ = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String NUMERIC = "0123456789";
+    private static final String SPECIAL = "/*-+=.?!,;:&'\"()[]{}$%#@<>";
+    
+    private static final int SIZE_LIMIT_PASSWORD = 1024;
     
     private Encryptor enc = new Encryptor(65536,256);
     private Decryptor dec = new Decryptor(65536,256);
@@ -85,6 +112,8 @@ public class FXMLPasswordManagerController implements Initializable {
     //if the item list is modif
     private static boolean modif = false;
     
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+    
     /**
      * Initialize the controller class
      * @param url
@@ -95,7 +124,6 @@ public class FXMLPasswordManagerController implements Initializable {
         itemListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         itemListView.setItems(obsListMyInfos);
         itemListView.setOnMouseClicked((event) -> {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
             MyCipheredInfo mci = itemListView.getSelectionModel().getSelectedItem();
             if(mci != null) {
                 entityLabel.setText(mci.getWebSite());
@@ -262,6 +290,7 @@ public class FXMLPasswordManagerController implements Initializable {
                 itemListView.getSelectionModel().getSelectedItem().setLastChange(new Date());
                 itemListView.refresh();
                 displayPasswordButton.setVisible(true);
+                lifetimePasswordLabel.setText(dateFormat.format(itemListView.getSelectionModel().getSelectedItem().getLastChange()));
                 passwordLabel.setText("");
                 modif = true;
             });
@@ -274,7 +303,6 @@ public class FXMLPasswordManagerController implements Initializable {
 
             alert.showAndWait();
         }
-        
     }
 
     /**
@@ -326,6 +354,25 @@ public class FXMLPasswordManagerController implements Initializable {
                 && !passwordTextField.getText().equals("")) {
             obsListMyInfos.add(new MyCipheredInfo(entityTextField.getText(), idTextField.getText(), enc.cipher(passwordTextField.getText(), FXMLPasswordManagerController.password), new Date()));
             infoLabel.setText("Entité ajoutée");
+            
+            Thread t = new Thread()  {
+                @Override
+                public void run() {
+                    FadeTransition fadeTransition = 
+                        new FadeTransition(Duration.millis(2000), infoLabel);
+                    fadeTransition.setFromValue(1.0f);
+                    fadeTransition.setToValue(0.0f);
+                    fadeTransition.setCycleCount(1);
+                    fadeTransition.setAutoReverse(true);
+
+                    fadeTransition.play();
+                    fadeTransition.setOnFinished((event) -> {
+                        infoLabel.setText("");
+                    });
+                }
+            };
+            t.start();
+                    
             entityTextField.clear();
             idTextField.clear();
             passwordTextField.clear();
@@ -434,5 +481,98 @@ public class FXMLPasswordManagerController implements Initializable {
      */
     public static boolean isModif() {
         return modif;
+    }
+
+    /**
+     * Generate a password
+     * @param event 
+     */
+    @FXML
+    private void generatePassword(ActionEvent event) {
+        StringBuilder characterList = new StringBuilder();
+
+        if(minCheckBox.isSelected()) {
+            characterList.append(ALPHA_MIN);
+        }
+        
+        if(majCheckBox.isSelected()) {
+            characterList.append(ALPHA_MAJ);
+        }
+        
+        if(numericCheckBox.isSelected()) {
+            characterList.append(NUMERIC);
+        }
+        
+        if(specialCheckBox.isSelected()) {
+            characterList.append(SPECIAL);
+        }
+        
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.setTitle("Erreur");
+        
+        if(!sizeGenerationTextField.getText().isEmpty() && characterList.toString().length()>0) {
+            StringBuilder sb = new StringBuilder();
+            
+            try {
+                int counter = 0;
+                
+                for(int i=0; i<Integer.parseInt(sizeGenerationTextField.getText()); i++) {
+                    if(counter>=SIZE_LIMIT_PASSWORD) {
+                        alert.setHeaderText("Longueur dépassée");
+                        alert.setContentText("Limite taille mot de passe atteinte : " + SIZE_LIMIT_PASSWORD);
+                        alert.showAndWait();
+                        break;
+                    }
+                    double idx = Math.random() * characterList.toString().length();
+                    sb.append(characterList.toString().charAt((int)idx));
+                    counter++;
+                }
+                generatePasswordTextField.setText(sb.toString());
+                generatePasswordTextField.requestFocus();
+                generatePasswordTextField.selectAll();
+                
+                Clipboard clipboard = Clipboard.getSystemClipboard();
+                ClipboardContent content = new ClipboardContent();
+                content.putString(generatePasswordTextField.getText());
+                clipboard.setContent(content);
+                
+                generatePasswordLabel.setText("Mot de passe copié dans le presse-papier");
+            
+                Thread t = new Thread()  {
+                    @Override
+                    public void run() {
+                        FadeTransition fadeTransition = 
+                            new FadeTransition(Duration.millis(2000), generatePasswordLabel);
+                        fadeTransition.setFromValue(1.0f);
+                        fadeTransition.setToValue(0.0f);
+                        fadeTransition.setCycleCount(1);
+                        fadeTransition.setAutoReverse(true);
+
+                        fadeTransition.play();
+                        fadeTransition.setOnFinished((event) -> {
+                            generatePasswordLabel.setText("");
+                        });
+                    }
+                };
+                t.start();
+                
+            } catch (Exception ex) {
+                Logger.getLogger(FXMLPasswordManagerController.class.getName()).log(Level.SEVERE, null, ex);
+                
+                alert.setHeaderText("Longueur incorrecte");
+                alert.setContentText("Veuillez indiquer un entier comme longueur.");
+                alert.showAndWait();
+            }
+        } else {
+            if(characterList.toString().length()<=0) {
+                alert.setHeaderText("Pas de caractère seléctionné");
+                alert.setContentText("Veuillez cocher au moins un type de caractère.");
+            } else {
+                alert.setHeaderText("Longueur incorrecte");
+                alert.setContentText("Veuillez indiquer la longueur du mot de passe désiré.");
+            }
+            alert.showAndWait();
+        }
     }
 }
